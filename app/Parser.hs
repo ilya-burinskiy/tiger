@@ -4,7 +4,7 @@ module Parser where
 
 import Ast
   ( Expr (DivExpr, IdExpr, IntExpr, NegExpr, ProductExpr, SubExpr, SumExpr),
-    FunDec (FunDec),
+    FunDec (FunDec, TypedFunDec),
     Type (..),
     TypeDec (..),
     TypeField (..),
@@ -127,3 +127,14 @@ parseFunDec =
         void $ lexeme $ char '='
         FunDec funId typeFields <$> parseExpr
     )
+    <|> ( do
+            void $ lexeme $ string "function"
+            funId <- parseID
+            void $ lexeme $ char '('
+            typeFields <- parseTypeFields
+            void $ lexeme $ char ')'
+            void $ lexeme $ char ':'
+            returnType <- parseID
+            void $ lexeme $ char '='
+            TypedFunDec funId typeFields returnType <$> parseExpr
+        )
