@@ -3,8 +3,8 @@
 module Parser where
 
 import Ast
-  ( Expr (DivExpr, IdExpr, IntExpr, NegExpr, ProductExpr, SubExpr, SumExpr),
-    FunDec (FunDec, TypedFunDec),
+  ( Expr (..),
+    FunDec (..),
     Type (..),
     TypeDec (..),
     TypeField (..),
@@ -33,7 +33,12 @@ symbol = Lexer.symbol spaceConsumer
 
 parseExpr :: Parser Expr
 parseExpr =
-  makeExprParser (choice [parens parseExpr, parseIdExpr, parseInt]) operatorsTable
+  parseIfExpr
+    <|> parseOpExpr
+
+parseOpExpr :: Parser Expr
+parseOpExpr =
+  makeExprParser (choice [parens parseOpExpr, parseIdExpr, parseInt]) operatorsTable
 
 parseIdExpr :: Parser Expr
 parseIdExpr = IdExpr <$> lexeme (parseID <?> "variable")
@@ -137,4 +142,24 @@ parseFunDec =
             returnType <- parseID
             void $ lexeme $ char '='
             TypedFunDec funId typeFields returnType <$> parseExpr
+        )
+
+-- ifexpr := `if` expr `then` expr `else` expr
+--           `if` expr `then` expr
+parseIfExpr :: Parser Expr
+parseIfExpr =
+  try
+    ( do
+        void $ lexeme $ string "if"
+        cond <- parseExpr
+        void $ lexeme $ string "then"
+        onTrue <- parseExpr
+        void $ lexeme $ string "else"
+        IfThenElseExpr cond onTrue <$> parseExpr
+    )
+    <|> ( do
+            void $ lexeme $ string "if"
+            cond <- parseExpr
+            void $ lexeme $ string "then"
+            IfThenExpr cond <$> parseExpr
         )
