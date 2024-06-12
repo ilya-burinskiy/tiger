@@ -1,18 +1,35 @@
 module Ast where
 
-type Id = String
+data TypeDec = TypeDec TypeId Type deriving (Show)
 
-data Binop = Plus | Minus | Times | Div deriving (Show)
-
-data Stm
-  = CompoundStm Stm Stm
-  | AssignStm Id Exp
-  | PrintStm [Exp]
+data Type
+  = TypeId TypeId
+  | TypeFields [TypeField]
+  | ArrayType TypeId
   deriving (Show)
 
-data Exp
-  = IdExp Id
-  | NumExp Int
-  | OpExp Exp Binop Exp
-  | EseqExp Stm Exp
+type TypeId = String
+
+type Id = String
+
+data TypeField = TypeField Id TypeId deriving (Show)
+
+data VarDec
+  = VarDec Id Expr
+  | TypedVarDec Id TypeId Expr
+  deriving (Show)
+
+data FunDec
+  = FunDec Id [TypeField] Expr
+  | TypedFunDec Id [TypeField] TypeId Expr
+  deriving (Show)
+
+data Expr
+  = IdExpr Id
+  | IntExpr Int
+  | NegExpr Expr
+  | SumExpr Expr Expr
+  | SubExpr Expr Expr
+  | ProductExpr Expr Expr
+  | DivExpr Expr Expr
   deriving (Show)

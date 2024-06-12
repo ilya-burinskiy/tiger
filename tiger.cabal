@@ -63,7 +63,7 @@ executable tiger
 
     -- Modules included in this executable, other than Main.
     other-modules:
-        Interp,
+        Parser,
         Ast
 
     -- LANGUAGE extensions used by modules in this package.
@@ -72,7 +72,9 @@ executable tiger
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.16.4.0,
-        containers >=0.6.5.1
+        megaparsec,
+        parser-combinators >=1.3.0,
+        text
     default-extensions:
         ImportQualifiedPost
 
