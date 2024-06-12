@@ -32,4 +32,6 @@ data Expr
   | SubExpr Expr Expr
   | ProductExpr Expr Expr
   | DivExpr Expr Expr
+  | IfThenElseExpr Expr Expr Expr
+  | IfThenExpr Expr Expr
   deriving (Show)
