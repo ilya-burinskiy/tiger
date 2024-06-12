@@ -69,7 +69,7 @@ parseTypeDec = do
 parseType :: Parser Type
 parseType =
   TypeId <$> parseID
-    <|> char '{' *> parseTypeFields <* char '}'
+    <|> char '{' *> (TypeFields <$> parseTypeFields) <* char '}'
     <|> ArrayType <$> (string "array" *> string "of" *> parseID)
 
 parseTypeField :: Parser TypeField
@@ -82,7 +82,7 @@ parseID :: Parser [Char]
 parseID = lexeme ((:) <$> letterChar <*> many (alphaNumChar <|> char '_'))
 
 -- typefields := [id`:` typeid [`,` id`:` typeid]*]
-parseTypeFields :: Parser Type
+parseTypeFields :: Parser [TypeField]
 parseTypeFields = do
   maybeTypeFields <- optional $ do
     typeField <- parseTypeField
@@ -91,8 +91,8 @@ parseTypeFields = do
       Just typeFields -> return $ typeField : typeFields
       Nothing -> return [typeField]
   case maybeTypeFields of
-    Just typeFields -> return $ TypeFields typeFields
-    Nothing -> return $ TypeFields []
+    Just typeFields -> return typeFields
+    Nothing -> return []
 
 -- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
 parseVarDec :: Parser VarDec
