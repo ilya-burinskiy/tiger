@@ -34,4 +34,11 @@ data Expr
   | DivExpr Expr Expr
   | IfThenElseExpr Expr Expr Expr
   | IfThenExpr Expr Expr
+  | LvalExpr Lvalue
+  deriving (Show)
+
+data Lvalue
+  = IdLvalue Id
+  | RecordLvalue Lvalue Id
+  | ArrayLvalue Lvalue Expr
   deriving (Show)

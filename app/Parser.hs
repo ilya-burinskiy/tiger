@@ -5,6 +5,7 @@ module Parser where
 import Ast
   ( Expr (..),
     FunDec (..),
+    Lvalue (..),
     Type (..),
     TypeDec (..),
     TypeField (..),
@@ -19,6 +20,7 @@ import Data.Void (Void)
 import Text.Megaparsec (Parsec, try, (<?>))
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
+import Data.Foldable (Foldable(foldl'))
 
 type Parser = Parsec Void Text.Text
 
@@ -163,3 +165,24 @@ parseIfExpr =
             void $ lexeme $ string "then"
             IfThenExpr cond <$> parseExpr
         )
+
+-- lvalue := id lvalue'
+parseLvalueExpr :: Parser Expr
+parseLvalueExpr = do
+  id' <- parseID
+  restOfLvalueExpr <- parseRestOfLvalueExpr
+  case restOfLvalueExpr of
+    Just rest ->
+      return $
+        LvalExpr $
+          foldl' (\res lvalConstruct -> lvalConstruct res) (IdLvalue id') rest
+    Nothing -> return $ LvalExpr (IdLvalue id')
+
+-- lvalue' := `.` id lvalue' | `[` expr `]` lvalue' | eps
+parseRestOfLvalueExpr :: Parser (Maybe [Lvalue -> Lvalue])
+parseRestOfLvalueExpr =
+  optional
+    ( many $
+        (flip RecordLvalue <$> (lexeme (char '.') *> parseID))
+          <|> (flip ArrayLvalue <$> (lexeme (char '[') *> parseExpr <* lexeme (char ']')))
+    )
