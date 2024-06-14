@@ -204,3 +204,12 @@ parseExprSeq = do
   case maybeExprSeq of
     Just exprSeq -> return exprSeq
     Nothing -> return []
+
+parseLetExpr :: Parser Expr
+parseLetExpr = do
+  void $ lexeme $ string "let"
+  decs <- parseDecList
+  void $ lexeme $ string "in"
+  exprSeq <- parseExprSeq
+  void $ lexeme $ string "end"
+  return $ LetExpr decs exprSeq
