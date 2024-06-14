@@ -30,6 +30,9 @@ lexeme = Lexer.lexeme spaceConsumer
 symbol :: Text.Text -> Parser Text.Text
 symbol = Lexer.symbol spaceConsumer
 
+parens :: Parser a -> Parser a
+parens = between (symbol ")") (symbol ")")
+
 parseExpr :: Parser Expr
 parseExpr =
   parseIfExpr
@@ -42,8 +45,8 @@ parseStringExpr = undefined
 parseInt :: Parser Expr
 parseInt = IntExpr <$> lexeme Lexer.decimal
 
-parens :: Parser a -> Parser a
-parens = between (symbol ")") (symbol ")")
+parseNilExpr :: Parser Expr
+parseNilExpr = NilExpr <$ symbol "nil"
 
 parseOpExpr :: Parser Expr
 parseOpExpr =
