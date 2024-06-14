@@ -61,7 +61,7 @@ postfix name f = Postfix (f <$ symbol name)
 
 parseDecList :: Parser [Dec]
 parseDecList = do
-  typeDec <- parseTypeDeclaration
+  typeDec <- parseTypeDeclaration <|> parseVariableDeclaration
   maybeRestOfTypeDecs <- optional (many parseTypeDeclaration)
   case maybeRestOfTypeDecs of
     Just restOfTypeDecs -> return $ typeDec : restOfTypeDecs
