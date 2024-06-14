@@ -3,13 +3,10 @@
 module Parser where
 
 import Ast
-  ( Expr (..),
-    FunDec (..),
+  ( Dec (..),
+    Expr (..),
     Lvalue (..),
-    Type (..),
-    TypeDec (..),
     TypeField (..),
-    VarDec (..),
   )
 import Control.Applicative (optional, (<|>))
 import Control.Monad (void)
@@ -62,19 +59,66 @@ prefix, postfix :: Text.Text -> (Expr -> Expr) -> Operator Parser Expr
 prefix name f = Prefix (f <$ symbol name)
 postfix name f = Postfix (f <$ symbol name)
 
-parseTypeDec :: Parser TypeDec
-parseTypeDec = do
-  void $ lexeme $ string "type"
-  typeId <- parseID
-  void $ lexeme $ char '='
-  TypeDec typeId <$> parseType
+-- type_declaration := `type` typeid `=` type
+-- type := typeid | `{` typefields `}` | `array` `of` typeid
+parseTypeDeclaration :: Parser Dec
+parseTypeDeclaration =
+  do
+    void $ lexeme $ string "type"
+    typeId <- parseID
+    void $ lexeme $ char '='
+    AliasTypeDec typeId <$> parseID
+      <|> ( RecordTypeDec typeId
+              <$> (lexeme (char '{') *> parseTypeFields <* lexeme (char '}'))
+          )
+      <|> ( ArrayTypeDec typeId
+              <$> (lexeme (string "array") *> lexeme (string "of") *> parseID)
+          )
 
--- ty := typeid | `{` typefields `}` | `array` `of` typeid
-parseType :: Parser Type
-parseType =
-  TypeId <$> parseID
-    <|> char '{' *> (TypeFields <$> parseTypeFields) <* char '}'
-    <|> ArrayType <$> (string "array" *> string "of" *> parseID)
+-- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
+parseVariableDeclaration :: Parser Dec
+parseVariableDeclaration =
+  try
+    ( do
+        void $ lexeme $ string "var"
+        varId <- parseID
+        void $ lexeme $ string ":="
+        VarDec varId <$> parseExpr
+    )
+    <|> ( do
+            void $ lexeme $ string "var"
+            varId <- parseID
+            void $ lexeme $ char ':'
+            typeId <- parseID
+            void $ lexeme $ string ":="
+            TypedVarDec varId typeId <$> parseExpr
+        )
+
+-- fundec := `function` id `(` typefields `)` `=` exp |
+--           `function` id `(` typefields `)` `:` typeid `=` exp
+parseFunctionDeclaration :: Parser Dec
+parseFunctionDeclaration =
+  try
+    ( do
+        void $ lexeme $ string "function"
+        funId <- parseID
+        void $ lexeme $ char '('
+        typeFields <- parseTypeFields
+        void $ lexeme $ char ')'
+        void $ lexeme $ char '='
+        FunDec funId typeFields <$> parseExpr
+    )
+    <|> ( do
+            void $ lexeme $ string "function"
+            funId <- parseID
+            void $ lexeme $ char '('
+            typeFields <- parseTypeFields
+            void $ lexeme $ char ')'
+            void $ lexeme $ char ':'
+            returnType <- parseID
+            void $ lexeme $ char '='
+            TypedFunDec funId typeFields returnType <$> parseExpr
+        )
 
 parseTypeField :: Parser TypeField
 parseTypeField = do
@@ -97,51 +141,6 @@ parseTypeFields = do
   case maybeTypeFields of
     Just typeFields -> return typeFields
     Nothing -> return []
-
--- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
-parseVarDec :: Parser VarDec
-parseVarDec =
-  try
-    ( do
-        void $ lexeme $ string "var"
-        varId <- parseID
-        void $ lexeme $ string ":="
-        VarDec varId <$> parseExpr
-    )
-    <|> ( do
-            void $ lexeme $ string "var"
-            varId <- parseID
-            void $ lexeme $ char ':'
-            typeId <- parseID
-            void $ lexeme $ string ":="
-            TypedVarDec varId typeId <$> parseExpr
-        )
-
--- fundec := `function` id `(` typefields `)` `=` exp |
---           `function` id `(` typefields `)` `:` typeid `=` exp
-parseFunDec :: Parser FunDec
-parseFunDec =
-  try
-    ( do
-        void $ lexeme $ string "function"
-        funId <- parseID
-        void $ lexeme $ char '('
-        typeFields <- parseTypeFields
-        void $ lexeme $ char ')'
-        void $ lexeme $ char '='
-        FunDec funId typeFields <$> parseExpr
-    )
-    <|> ( do
-            void $ lexeme $ string "function"
-            funId <- parseID
-            void $ lexeme $ char '('
-            typeFields <- parseTypeFields
-            void $ lexeme $ char ')'
-            void $ lexeme $ char ':'
-            returnType <- parseID
-            void $ lexeme $ char '='
-            TypedFunDec funId typeFields returnType <$> parseExpr
-        )
 
 -- ifexpr := `if` expr `then` expr `else` expr
 --           `if` expr `then` expr

@@ -1,28 +1,20 @@
 module Ast where
 
-data TypeDec = TypeDec TypeId Type deriving (Show)
-
-data Type
-  = TypeId TypeId
-  | TypeFields [TypeField]
-  | ArrayType TypeId
-  deriving (Show)
-
 type TypeId = String
 
 type Id = String
 
-data TypeField = TypeField Id TypeId deriving (Show)
-
-data VarDec
-  = VarDec Id Expr
+data Dec
+  = AliasTypeDec TypeId TypeId
+  | RecordTypeDec TypeId [TypeField]
+  | ArrayTypeDec TypeId TypeId
+  | VarDec Id Expr
   | TypedVarDec Id TypeId Expr
-  deriving (Show)
-
-data FunDec
-  = FunDec Id [TypeField] Expr
+  | FunDec Id [TypeField] Expr
   | TypedFunDec Id [TypeField] TypeId Expr
   deriving (Show)
+
+data TypeField = TypeField Id TypeId deriving (Show)
 
 data Expr
   = StringExpr String
