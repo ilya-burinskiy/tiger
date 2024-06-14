@@ -15,12 +15,12 @@ import Control.Applicative (optional, (<|>))
 import Control.Monad (void)
 import Control.Monad.Combinators (between, choice, many)
 import Control.Monad.Combinators.Expr (Operator (InfixL, Postfix, Prefix), makeExprParser)
+import Data.Foldable (Foldable (foldl'))
 import Data.Text qualified as Text
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, try, (<?>))
+import Text.Megaparsec (Parsec, try)
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
-import Data.Foldable (Foldable(foldl'))
 
 type Parser = Parsec Void Text.Text
 
@@ -40,10 +40,7 @@ parseExpr =
 
 parseOpExpr :: Parser Expr
 parseOpExpr =
-  makeExprParser (choice [parens parseOpExpr, parseIdExpr, parseInt]) operatorsTable
-
-parseIdExpr :: Parser Expr
-parseIdExpr = IdExpr <$> lexeme (parseID <?> "variable")
+  makeExprParser (choice [parens parseOpExpr, parseLvalueExpr, parseInt]) operatorsTable
 
 parseInt :: Parser Expr
 parseInt = IntExpr <$> lexeme Lexer.decimal
