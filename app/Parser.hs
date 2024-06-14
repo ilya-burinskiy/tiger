@@ -59,6 +59,14 @@ prefix, postfix :: Text.Text -> (Expr -> Expr) -> Operator Parser Expr
 prefix name f = Prefix (f <$ symbol name)
 postfix name f = Postfix (f <$ symbol name)
 
+parseDecList :: Parser [Dec]
+parseDecList = do
+  typeDec <- parseTypeDeclaration
+  maybeRestOfTypeDecs <- optional (many parseTypeDeclaration)
+  case maybeRestOfTypeDecs of
+    Just restOfTypeDecs -> return $ typeDec : restOfTypeDecs
+    Nothing -> return [typeDec]
+
 -- type_declaration := `type` typeid `=` type
 -- type := typeid | `{` typefields `}` | `array` `of` typeid
 parseTypeDeclaration :: Parser Dec
