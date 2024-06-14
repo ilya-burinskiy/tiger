@@ -73,14 +73,14 @@ parseTypeDeclaration :: Parser Dec
 parseTypeDeclaration =
   do
     void $ lexeme $ string "type"
-    typeId <- parseID
+    typeId <- parseId
     void $ lexeme $ char '='
-    AliasTypeDec typeId <$> parseID
+    AliasTypeDec typeId <$> parseId
       <|> ( RecordTypeDec typeId
               <$> (lexeme (char '{') *> parseTypeFields <* lexeme (char '}'))
           )
       <|> ( ArrayTypeDec typeId
-              <$> (lexeme (string "array") *> lexeme (string "of") *> parseID)
+              <$> (lexeme (string "array") *> lexeme (string "of") *> parseId)
           )
 
 -- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
@@ -89,15 +89,15 @@ parseVariableDeclaration =
   try
     ( do
         void $ lexeme $ string "var"
-        varId <- parseID
+        varId <- parseId
         void $ lexeme $ string ":="
         VarDec varId <$> parseExpr
     )
     <|> ( do
             void $ lexeme $ string "var"
-            varId <- parseID
+            varId <- parseId
             void $ lexeme $ char ':'
-            typeId <- parseID
+            typeId <- parseId
             void $ lexeme $ string ":="
             TypedVarDec varId typeId <$> parseExpr
         )
@@ -109,7 +109,7 @@ parseFunctionDeclaration =
   try
     ( do
         void $ lexeme $ string "function"
-        funId <- parseID
+        funId <- parseId
         void $ lexeme $ char '('
         typeFields <- parseTypeFields
         void $ lexeme $ char ')'
@@ -118,24 +118,24 @@ parseFunctionDeclaration =
     )
     <|> ( do
             void $ lexeme $ string "function"
-            funId <- parseID
+            funId <- parseId
             void $ lexeme $ char '('
             typeFields <- parseTypeFields
             void $ lexeme $ char ')'
             void $ lexeme $ char ':'
-            returnType <- parseID
+            returnType <- parseId
             void $ lexeme $ char '='
             TypedFunDec funId typeFields returnType <$> parseExpr
         )
 
 parseTypeField :: Parser TypeField
 parseTypeField = do
-  id' <- parseID
+  id' <- parseId
   void $ lexeme $ char ':'
-  TypeField id' <$> parseID
+  TypeField id' <$> parseId
 
-parseID :: Parser [Char]
-parseID = lexeme ((:) <$> letterChar <*> many (alphaNumChar <|> char '_'))
+parseId :: Parser [Char]
+parseId = lexeme ((:) <$> letterChar <*> many (alphaNumChar <|> char '_'))
 
 -- typefields := [id`:` typeid [`,` id`:` typeid]*]
 parseTypeFields :: Parser [TypeField]
@@ -173,7 +173,7 @@ parseIfExpr =
 -- lvalue := id lvalue'
 parseLvalueExpr :: Parser Expr
 parseLvalueExpr = do
-  id' <- parseID
+  id' <- parseId
   restOfLvalueExpr <- parseRestOfLvalueExpr
   case restOfLvalueExpr of
     Just rest ->
@@ -187,7 +187,7 @@ parseRestOfLvalueExpr :: Parser (Maybe [Lvalue -> Lvalue])
 parseRestOfLvalueExpr =
   optional
     ( many $
-        (flip RecordLvalue <$> (lexeme (char '.') *> parseID))
+        (flip RecordLvalue <$> (lexeme (char '.') *> parseId))
           <|> (flip ArrayLvalue <$> (lexeme (char '[') *> parseExpr <* lexeme (char ']')))
     )
 
