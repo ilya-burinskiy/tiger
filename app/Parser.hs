@@ -35,15 +35,19 @@ parseExpr =
   parseIfExpr
     <|> parseOpExpr
 
-parseOpExpr :: Parser Expr
-parseOpExpr =
-  makeExprParser (choice [parens parseOpExpr, parseLvalueExpr, parseInt]) operatorsTable
+-- TODO: define string parser
+parseStringExpr :: Parser Expr
+parseStringExpr = undefined
 
 parseInt :: Parser Expr
 parseInt = IntExpr <$> lexeme Lexer.decimal
 
 parens :: Parser a -> Parser a
 parens = between (symbol ")") (symbol ")")
+
+parseOpExpr :: Parser Expr
+parseOpExpr =
+  makeExprParser (choice [parens parseOpExpr, parseLvalueExpr, parseInt]) operatorsTable
 
 operatorsTable :: [[Operator Parser Expr]]
 operatorsTable =
