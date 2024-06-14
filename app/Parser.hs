@@ -72,6 +72,14 @@ parseAssignExpr = do
   void $ symbol ":="
   AssignExpr lval <$> parseExpr
 
+parseCallExpr :: Parser Expr
+parseCallExpr = do
+  funcId <- parseId
+  void $ symbol "("
+  args <- parseExprList
+  void $ symbol ")"
+  return $ CallExpr funcId args
+
 parseDecList :: Parser [Dec]
 parseDecList = do
   typeDec <- parseTypeDeclaration <|> parseVariableDeclaration
@@ -217,6 +225,19 @@ parseExprSeq = do
   void $ lexeme $ char ')'
   case maybeExprSeq of
     Just exprSeq -> return exprSeq
+    Nothing -> return []
+
+parseExprList :: Parser [Expr]
+parseExprList = do
+  maybeExprList <- optional $ do
+    expr <- parseExpr
+    maybeRestOfExprSeq <- optional $ many (void (lexeme $ char ',') >> parseExpr)
+    case maybeRestOfExprSeq of
+      Just restOfExprSeq -> return $ expr : restOfExprSeq
+      Nothing -> return [expr]
+  void $ lexeme $ char ')'
+  case maybeExprList of
+    Just exprList -> return exprList
     Nothing -> return []
 
 parseLetExpr :: Parser Expr
