@@ -66,6 +66,12 @@ prefix, postfix :: Text.Text -> (Expr -> Expr) -> Operator Parser Expr
 prefix name f = Prefix (f <$ symbol name)
 postfix name f = Postfix (f <$ symbol name)
 
+parseAssignExpr :: Parser Expr
+parseAssignExpr = do
+  lval <- parseLvalue
+  void $ symbol ":="
+  AssignExpr lval <$> parseExpr
+
 parseDecList :: Parser [Dec]
 parseDecList = do
   typeDec <- parseTypeDeclaration <|> parseVariableDeclaration
@@ -179,15 +185,16 @@ parseIfExpr =
 
 -- lvalue := id lvalue'
 parseLvalueExpr :: Parser Expr
-parseLvalueExpr = do
+parseLvalueExpr = LvalExpr <$> parseLvalue
+
+parseLvalue :: Parser Lvalue
+parseLvalue = do
   id' <- parseId
   restOfLvalueExpr <- parseRestOfLvalueExpr
   case restOfLvalueExpr of
     Just rest ->
-      return $
-        LvalExpr $
-          foldl' (\res lvalConstruct -> lvalConstruct res) (IdLvalue id') rest
-    Nothing -> return $ LvalExpr (IdLvalue id')
+      return $ foldl' (\res lvalConstruct -> lvalConstruct res) (IdLvalue id') rest
+    Nothing -> return $ IdLvalue id'
 
 -- lvalue' := `.` id lvalue' | `[` expr `]` lvalue' | eps
 parseRestOfLvalueExpr :: Parser (Maybe [Lvalue -> Lvalue])
