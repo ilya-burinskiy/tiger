@@ -36,6 +36,7 @@ data Expr
   | WhileExpr Expr Expr
   | ForExpr Expr Expr Expr
   | BreakExpr
+  | LetExpr [Dec] [Expr]
   deriving (Show)
 
 data Lvalue
