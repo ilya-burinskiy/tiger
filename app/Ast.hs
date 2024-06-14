@@ -25,16 +25,25 @@ data FunDec
   deriving (Show)
 
 data Expr
-  = IdExpr Id
+  = StringExpr String
   | IntExpr Int
+  | NilExpr
+  | LvalExpr Lvalue
   | NegExpr Expr
-  | SumExpr Expr Expr
-  | SubExpr Expr Expr
   | ProductExpr Expr Expr
   | DivExpr Expr Expr
+  | SumExpr Expr Expr
+  | SubExpr Expr Expr
+  | AssignExpr Lvalue Expr
+  | CallExpr Id [Expr]
+  | ExprSeq [Expr]
+  | RecordInstanceExpr TypeId [(Id, Expr)]
+  | ArrayInstanceExpr TypeId Expr Expr
   | IfThenElseExpr Expr Expr Expr
   | IfThenExpr Expr Expr
-  | LvalExpr Lvalue
+  | WhileExpr Expr Expr
+  | ForExpr Expr Expr Expr
+  | BreakExpr
   deriving (Show)
 
 data Lvalue
