@@ -107,6 +107,15 @@ parseRecordField = do
   void $ symbol "="
   (,) id' <$> parseExpr
 
+parseArrayInstanceExpr :: Parser Expr
+parseArrayInstanceExpr = do
+  typeId <- parseId
+  void $ symbol "["
+  idxExpr <- parseExpr
+  void $ symbol "]"
+  void $ symbol "of"
+  ArrayInstanceExpr typeId idxExpr <$> parseExpr
+
 parseDecList :: Parser [Dec]
 parseDecList = do
   typeDec <- parseTypeDeclaration <|> parseVariableDeclaration
