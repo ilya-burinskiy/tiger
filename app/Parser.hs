@@ -15,7 +15,7 @@ import Control.Monad.Combinators.Expr (Operator (InfixL, Postfix, Prefix), makeE
 import Data.Foldable (Foldable (foldl'))
 import Data.Text qualified as Text
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, try)
+import Text.Megaparsec (Parsec, anySingleBut, try)
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
 
@@ -38,9 +38,9 @@ parseExpr =
   parseIfExpr
     <|> parseOpExpr
 
--- TODO: define string parser
+-- TODO: define handle escape sequences
 parseStringExpr :: Parser Expr
-parseStringExpr = undefined
+parseStringExpr = StringExpr <$> (char '"' *> many (anySingleBut '"') <* char '"')
 
 parseInt :: Parser Expr
 parseInt = IntExpr <$> lexeme Lexer.decimal
