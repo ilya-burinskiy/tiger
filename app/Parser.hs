@@ -284,14 +284,12 @@ parseRestOfLvalueExpr =
 
 parseExprSeq :: Parser [Expr]
 parseExprSeq = do
-  void $ lexeme $ char '('
   maybeExprSeq <- optional $ do
     expr <- parseExpr
     maybeRestOfExprSeq <- optional $ many (void (lexeme $ char ';') >> parseExpr)
     case maybeRestOfExprSeq of
       Just restOfExprSeq -> return $ expr : restOfExprSeq
       Nothing -> return [expr]
-  void $ lexeme $ char ')'
   case maybeExprSeq of
     Just exprSeq -> return exprSeq
     Nothing -> return []
