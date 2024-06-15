@@ -294,6 +294,9 @@ parseExprList = do
     Just exprList -> return exprList
     Nothing -> return []
 
+parseBreakExpr :: Parser Expr
+parseBreakExpr = BreakExpr <$ symbol "break"
+
 parseLetExpr :: Parser Expr
 parseLetExpr = do
   void $ lexeme $ string "let"
