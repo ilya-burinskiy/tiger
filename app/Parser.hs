@@ -32,7 +32,7 @@ symbol :: Text.Text -> Parser Text.Text
 symbol = Lexer.symbol spaceConsumer
 
 parens :: Parser a -> Parser a
-parens = between (symbol ")") (symbol ")")
+parens = between (symbol "(") (symbol ")")
 
 parseExpr :: Parser Expr
 parseExpr =
@@ -42,6 +42,7 @@ parseExpr =
       parseForExpr,
       parseBreakExpr,
       parseLetExpr,
+      try $ ExprSeq <$> parens parseExprSeq,
       parseOpExpr
     ]
 
