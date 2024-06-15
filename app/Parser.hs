@@ -42,8 +42,9 @@ parseExpr =
       parseForExpr,
       parseBreakExpr,
       parseLetExpr,
-      try $ ExprSeq <$> parens parseExprSeq,
-      parseOpExpr
+      try parseAssignExpr,
+      try parseOpExpr,
+      ExprSeq <$> parens parseExprSeq
     ]
 
 -- TODO: define handle escape sequences
@@ -60,9 +61,13 @@ parseOpExpr :: Parser Expr
 parseOpExpr =
   makeExprParser
     ( choice
-        [ parens parseOpExpr,
+        [ parens parseExpr,
+          try parseNilExpr,
           try parseCallExpr,
+          try parseRecordInstanceExpr,
+          try parseArrayInstanceExpr,
           parseLvalueExpr,
+          parseStringExpr,
           parseIntExpr
         ]
     )
