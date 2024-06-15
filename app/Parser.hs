@@ -36,22 +36,36 @@ parens = between (symbol ")") (symbol ")")
 
 parseExpr :: Parser Expr
 parseExpr =
-  parseIfExpr
-    <|> parseOpExpr
+  choice
+    [ parseIfExpr,
+      parseWhileExpr,
+      parseForExpr,
+      parseBreakExpr,
+      parseLetExpr,
+      parseOpExpr
+    ]
 
 -- TODO: define handle escape sequences
 parseStringExpr :: Parser Expr
 parseStringExpr = StringExpr <$> (char '"' *> many (anySingleBut '"') <* char '"')
 
-parseInt :: Parser Expr
-parseInt = IntExpr <$> lexeme Lexer.decimal
+parseIntExpr :: Parser Expr
+parseIntExpr = IntExpr <$> lexeme Lexer.decimal
 
 parseNilExpr :: Parser Expr
 parseNilExpr = NilExpr <$ symbol "nil"
 
 parseOpExpr :: Parser Expr
 parseOpExpr =
-  makeExprParser (choice [parens parseOpExpr, parseLvalueExpr, parseInt]) operatorsTable
+  makeExprParser
+    ( choice
+        [ parens parseOpExpr,
+          try parseCallExpr,
+          parseLvalueExpr,
+          parseIntExpr
+        ]
+    )
+    operatorsTable
 
 operatorsTable :: [[Operator Parser Expr]]
 operatorsTable =
