@@ -289,7 +289,6 @@ parseExprList = do
     case maybeRestOfExprSeq of
       Just restOfExprSeq -> return $ expr : restOfExprSeq
       Nothing -> return [expr]
-  void $ lexeme $ char ')'
   case maybeExprList of
     Just exprList -> return exprList
     Nothing -> return []
