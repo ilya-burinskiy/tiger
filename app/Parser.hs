@@ -234,6 +234,17 @@ parseWhileExpr = do
   void $ symbol "do"
   WhileExpr cond <$> parseExpr
 
+parseForExpr :: Parser Expr
+parseForExpr = do
+  void $ symbol "for"
+  id' <- parseId
+  void $ symbol ":="
+  initVal <- parseExpr
+  void $ symbol "to"
+  finalVal <- parseExpr
+  void $ symbol "do"
+  ForExpr id' initVal finalVal <$> parseExpr
+
 -- lvalue := id lvalue'
 parseLvalueExpr :: Parser Expr
 parseLvalueExpr = LvalExpr <$> parseLvalue

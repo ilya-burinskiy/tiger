@@ -34,7 +34,7 @@ data Expr
   | IfThenElseExpr Expr Expr Expr
   | IfThenExpr Expr Expr
   | WhileExpr Expr Expr
-  | ForExpr Expr Expr Expr
+  | ForExpr Id Expr Expr Expr
   | BreakExpr
   | LetExpr [Dec] [Expr]
   deriving (Show)
