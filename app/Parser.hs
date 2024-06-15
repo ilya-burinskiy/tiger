@@ -5,6 +5,7 @@ module Parser where
 import Ast
   ( Dec (..),
     Expr (..),
+    Id,
     Lvalue (..),
     TypeField (..),
   )
@@ -79,6 +80,32 @@ parseCallExpr = do
   args <- parseExprList
   void $ symbol ")"
   return $ CallExpr funcId args
+
+parseRecordInstanceExpr :: Parser Expr
+parseRecordInstanceExpr = do
+  typeId <- parseId
+  void $ symbol "{"
+  fieldList <- parseFieldList
+  void $ symbol "}"
+  return $ RecordInstanceExpr typeId fieldList
+
+parseFieldList :: Parser [(Id, Expr)]
+parseFieldList = do
+  maybeFields <- optional $ do
+    recordField <- parseRecordField
+    maybeRestOfRecordFields <- optional $ many (void (symbol ",") >> parseRecordField)
+    case maybeRestOfRecordFields of
+      Just recordFields -> return $ recordField : recordFields
+      Nothing -> return [recordField]
+  case maybeFields of
+    Just fields -> return fields
+    Nothing -> return []
+
+parseRecordField :: Parser (Id, Expr)
+parseRecordField = do
+  id' <- parseId
+  void $ symbol "="
+  (,) id' <$> parseExpr
 
 parseDecList :: Parser [Dec]
 parseDecList = do
