@@ -227,6 +227,13 @@ parseIfExpr =
             IfThenExpr cond <$> parseExpr
         )
 
+parseWhileExpr :: Parser Expr
+parseWhileExpr = do
+  void $ symbol "while"
+  cond <- parseExpr
+  void $ symbol "do"
+  WhileExpr cond <$> parseExpr
+
 -- lvalue := id lvalue'
 parseLvalueExpr :: Parser Expr
 parseLvalueExpr = LvalExpr <$> parseLvalue
