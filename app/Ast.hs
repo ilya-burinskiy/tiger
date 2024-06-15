@@ -14,9 +14,9 @@ data Dec
   | TypedVarDec Id TypeId Expr
   | FunDec Id [TypeField] Expr
   | TypedFunDec Id [TypeField] TypeId Expr
-  deriving (Show)
+  deriving (Show, Eq)
 
-data TypeField = TypeField Id TypeId deriving (Show)
+data TypeField = TypeField Id TypeId deriving (Show, Eq)
 
 data Expr
   = StringExpr String
@@ -47,10 +47,10 @@ data Expr
   | ForExpr Id Expr Expr Expr
   | BreakExpr
   | LetExpr [Dec] [Expr]
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Lvalue
   = IdLvalue Id
   | RecordLvalue Lvalue Id
   | ArrayLvalue Lvalue Expr
-  deriving (Show)
+  deriving (Show, Eq)
