@@ -7,6 +7,7 @@ import Ast
     Expr (..),
     Id,
     Lvalue (..),
+    Prog (..),
     TypeField (..),
   )
 import Control.Applicative (optional, (<|>))
@@ -16,7 +17,7 @@ import Control.Monad.Combinators.Expr (Operator (InfixL, Postfix, Prefix), makeE
 import Data.Foldable (Foldable (foldl'))
 import Data.Text qualified as Text
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, anySingleBut, try)
+import Text.Megaparsec (MonadParsec (eof), Parsec, anySingleBut, try)
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
 
@@ -33,6 +34,13 @@ symbol = Lexer.symbol spaceConsumer
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
+
+parseProg :: Parser Prog
+parseProg = do
+  maybeDecs <- optional parseDecList
+  case maybeDecs of
+    Just decs -> Prog decs <$> parseExpr <* eof
+    Nothing -> Prog [] <$> parseExpr <* eof
 
 parseExpr :: Parser Expr
 parseExpr =
