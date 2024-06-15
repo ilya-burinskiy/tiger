@@ -26,6 +26,14 @@ data Expr
   | DivExpr Expr Expr
   | SumExpr Expr Expr
   | SubExpr Expr Expr
+  | EqExpr Expr Expr
+  | NotEqExpr Expr Expr
+  | GtExpr Expr Expr
+  | GtOrEqExpr Expr Expr
+  | LtExpr Expr Expr
+  | LtOrEqExpr Expr Expr
+  | AndExpr Expr Expr
+  | OrExpr Expr Expr
   | AssignExpr Lvalue Expr
   | CallExpr Id [Expr]
   | ExprSeq [Expr]

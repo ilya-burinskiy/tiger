@@ -77,7 +77,15 @@ operatorsTable :: [[Operator Parser Expr]]
 operatorsTable =
   [ [prefix "-" NegExpr, prefix "+" id],
     [binary "*" ProductExpr, binary "/" DivExpr],
-    [binary "+" SumExpr, binary "-" SubExpr]
+    [binary "+" SumExpr, binary "-" SubExpr],
+    [ binary "=" EqExpr,
+      binary "<>" NotEqExpr,
+      binary ">" GtExpr,
+      binary "<" LtExpr,
+      binary ">=" GtOrEqExpr,
+      binary "<=" LtOrEqExpr
+    ],
+    [binary "&" AndExpr, binary "|" OrExpr]
   ]
 
 binary :: Text.Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
