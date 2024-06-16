@@ -17,7 +17,7 @@ import Control.Monad.Combinators.Expr (Operator (InfixL, Postfix, Prefix), makeE
 import Data.Foldable (Foldable (foldl'))
 import Data.Text qualified as Text
 import Data.Void (Void)
-import Text.Megaparsec (MonadParsec (eof), Parsec, anySingleBut, try)
+import Text.Megaparsec (MonadParsec (eof, notFollowedBy), Parsec, anySingleBut, try)
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
 
@@ -34,6 +34,9 @@ symbol = Lexer.symbol spaceConsumer
 
 parens :: Parser a -> Parser a
 parens = between (symbol "(") (symbol ")")
+
+parseKeyword :: Text.Text -> Parser Text.Text
+parseKeyword keyword = lexeme (string keyword <* notFollowedBy (alphaNumChar <|> char '_'))
 
 parseProg :: Parser Prog
 parseProg = do
@@ -63,7 +66,7 @@ parseIntExpr :: Parser Expr
 parseIntExpr = IntExpr <$> lexeme Lexer.decimal
 
 parseNilExpr :: Parser Expr
-parseNilExpr = NilExpr <$ symbol "nil"
+parseNilExpr = NilExpr <$ parseKeyword "nil"
 
 parseOpExpr :: Parser Expr
 parseOpExpr =
@@ -149,7 +152,7 @@ parseArrayInstanceExpr = do
   void $ symbol "["
   idxExpr <- parseExpr
   void $ symbol "]"
-  void $ symbol "of"
+  void $ parseKeyword "of"
   ArrayInstanceExpr typeId idxExpr <$> parseExpr
 
 parseDecList :: Parser [Dec]
@@ -165,7 +168,7 @@ parseDecList = do
 parseTypeDeclaration :: Parser Dec
 parseTypeDeclaration =
   do
-    void $ lexeme $ string "type"
+    void $ parseKeyword "type"
     typeId <- parseId
     void $ lexeme $ char '='
     AliasTypeDec typeId <$> parseId
@@ -173,7 +176,7 @@ parseTypeDeclaration =
               <$> (lexeme (char '{') *> parseTypeFields <* lexeme (char '}'))
           )
       <|> ( ArrayTypeDec typeId
-              <$> (lexeme (string "array") *> lexeme (string "of") *> parseId)
+              <$> (parseKeyword "array" *> parseKeyword "of" *> parseId)
           )
 
 -- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
@@ -181,13 +184,13 @@ parseVariableDeclaration :: Parser Dec
 parseVariableDeclaration =
   try
     ( do
-        void $ lexeme $ string "var"
+        void $ parseKeyword "var"
         varId <- parseId
         void $ lexeme $ string ":="
         VarDec varId <$> parseExpr
     )
     <|> ( do
-            void $ lexeme $ string "var"
+            void $ parseKeyword "var"
             varId <- parseId
             void $ lexeme $ char ':'
             typeId <- parseId
@@ -201,7 +204,7 @@ parseFunctionDeclaration :: Parser Dec
 parseFunctionDeclaration =
   try
     ( do
-        void $ lexeme $ string "function"
+        void $ parseKeyword "function"
         funId <- parseId
         void $ lexeme $ char '('
         typeFields <- parseTypeFields
@@ -210,7 +213,7 @@ parseFunctionDeclaration =
         FunDec funId typeFields <$> parseExpr
     )
     <|> ( do
-            void $ lexeme $ string "function"
+            void $ parseKeyword "function"
             funId <- parseId
             void $ lexeme $ char '('
             typeFields <- parseTypeFields
@@ -249,36 +252,36 @@ parseIfExpr :: Parser Expr
 parseIfExpr =
   try
     ( do
-        void $ lexeme $ string "if"
+        void $ parseKeyword "if"
         cond <- parseExpr
-        void $ lexeme $ string "then"
+        void $ parseKeyword "then"
         onTrue <- parseExpr
-        void $ lexeme $ string "else"
+        void $ parseKeyword "else"
         IfThenElseExpr cond onTrue <$> parseExpr
     )
     <|> ( do
-            void $ lexeme $ string "if"
+            void $ parseKeyword "if"
             cond <- parseExpr
-            void $ lexeme $ string "then"
+            void $ parseKeyword "then"
             IfThenExpr cond <$> parseExpr
         )
 
 parseWhileExpr :: Parser Expr
 parseWhileExpr = do
-  void $ symbol "while"
+  void $ parseKeyword "while"
   cond <- parseExpr
-  void $ symbol "do"
+  void $ parseKeyword "do"
   WhileExpr cond <$> parseExpr
 
 parseForExpr :: Parser Expr
 parseForExpr = do
-  void $ symbol "for"
+  void $ parseKeyword "for"
   id' <- parseId
   void $ symbol ":="
   initVal <- parseExpr
-  void $ symbol "to"
+  void $ parseKeyword "to"
   finalVal <- parseExpr
-  void $ symbol "do"
+  void $ parseKeyword "do"
   ForExpr id' initVal finalVal <$> parseExpr
 
 -- lvalue := id lvalue'
@@ -328,13 +331,13 @@ parseExprList = do
     Nothing -> return []
 
 parseBreakExpr :: Parser Expr
-parseBreakExpr = BreakExpr <$ symbol "break"
+parseBreakExpr = BreakExpr <$ parseKeyword "break"
 
 parseLetExpr :: Parser Expr
 parseLetExpr = do
-  void $ lexeme $ string "let"
+  void $ parseKeyword "let"
   decs <- parseDecList
-  void $ lexeme $ string "in"
+  void $ parseKeyword "in"
   exprSeq <- parseExprSeq
-  void $ lexeme $ string "end"
+  void $ parseKeyword "end"
   return $ LetExpr decs exprSeq
