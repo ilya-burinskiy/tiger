@@ -1,4 +1,4 @@
-module Ast where
+module Tiger.Ast where
 
 type TypeId = String
 

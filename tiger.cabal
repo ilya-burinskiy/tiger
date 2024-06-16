@@ -13,8 +13,20 @@ common warnings
     ghc-options: -Wall
 
 executable tiger
-    import:           warnings
-    main-is:          Main.hs
+    import: warnings
+    main-is: Main.hs
+    build-depends:
+        base ^>=4.16.4.0,
+    default-extensions:
+    hs-source-dirs: app
+    default-language: Haskell2010
+
+library
+    default-language: Haskell2010
+    hs-source-dirs: src
+    exposed-modules:
+        Tiger.Ast
+        Tiger.Parser
     other-modules:
     build-depends:
         base ^>=4.16.4.0,
@@ -23,5 +35,22 @@ executable tiger
         text
     default-extensions:
         ImportQualifiedPost
-    hs-source-dirs:   app
+
+test-suite spec
+    import: warnings
+    type: exitcode-stdio-1.0
+    main-is: Spec.hs
+    hs-source-dirs: test
+    build-depends:
+        base ^>=4.16.4.0,
+        megaparsec,
+        parser-combinators >=1.3.0,
+        text,
+        tiger,
+        hspec,
+        hspec-megaparsec
+    other-modules:
+        Tiger.ParserSpec
     default-language: Haskell2010
+    build-tool-depends:
+        hspec-discover:hspec-discover

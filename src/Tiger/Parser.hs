@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Parser where
+module Tiger.Parser where
 
-import Ast
+import Tiger.Ast
   ( Dec (..),
     Expr (..),
     Id,
