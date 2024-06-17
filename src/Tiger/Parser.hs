@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Tiger.Parser where
 
 import Tiger.Ast
