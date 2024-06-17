@@ -50,6 +50,8 @@ test-suite spec
         tiger,
         hspec,
         hspec-megaparsec
+    default-extensions:
+        OverloadedStrings
     other-modules:
         Tiger.ParserSpec
     default-language: Haskell2010

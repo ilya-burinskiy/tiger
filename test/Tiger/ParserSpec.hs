@@ -1,9 +1,18 @@
 module Tiger.ParserSpec where
 
-import Test.Hspec ( describe, it, shouldBe, Spec )
+import Test.Hspec (Spec, describe, it)
+import Test.Hspec.Megaparsec (shouldParse, shouldFailOn)
+import Text.Megaparsec (parse)
+import Tiger.Ast (Expr (..))
+import Tiger.Parser
+  ( parseStringExpr,
+    parseIntExpr,
+    parseNilExpr
+  )
 
 spec :: Spec
 spec = do
-  describe "" $ do
-    it "does something" $ do
-      True `shouldBe` True
+  describe "parser" $ do
+    describe "parseStringExpr" $ do
+      it "parses string" $ do
+        parse parseStringExpr "" "\"abcd\"" `shouldParse` StringExpr "abcd"
