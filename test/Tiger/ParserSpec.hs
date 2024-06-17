@@ -19,3 +19,12 @@ spec = do
     describe "parseIntExpr" $ do
       it "parses int" $ do
         parse parseIntExpr "" "123" `shouldParse` IntExpr 123
+    describe "parseNilExpr" $ do
+      it "parses nil expr" $ do
+        parse parseNilExpr "" "nil" `shouldParse` NilExpr
+      it "does not parse nil followed by num" $
+        parse parseNilExpr ""  `shouldFailOn` "nil1"
+      it "does not parse nil followed by char" $
+        parse parseNilExpr ""  `shouldFailOn` "nila"
+      it "does not parse nil followed by \"_\"" $
+        parse parseNilExpr ""  `shouldFailOn` "nil_"
