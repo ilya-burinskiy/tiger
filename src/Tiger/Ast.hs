@@ -41,8 +41,7 @@ data Expr
   | ExprSeq [Expr]
   | RecordInstanceExpr TypeId [(Id, Expr)]
   | ArrayInstanceExpr TypeId Expr Expr
-  | IfThenElseExpr Expr Expr Expr
-  | IfThenExpr Expr Expr
+  | IfThenElseExpr Expr Expr (Maybe Expr)
   | WhileExpr Expr Expr
   | ForExpr Id Expr Expr Expr
   | BreakExpr

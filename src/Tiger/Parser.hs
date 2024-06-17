@@ -1,13 +1,5 @@
 module Tiger.Parser where
 
-import Tiger.Ast
-  ( Dec (..),
-    Expr (..),
-    Id,
-    Lvalue (..),
-    Prog (..),
-    TypeField (..),
-  )
 import Control.Applicative (optional, (<|>))
 import Control.Monad (void)
 import Control.Monad.Combinators (between, choice, many)
@@ -18,6 +10,14 @@ import Data.Void (Void)
 import Text.Megaparsec (MonadParsec (eof, notFollowedBy), Parsec, anySingleBut, try)
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space1, string)
 import Text.Megaparsec.Char.Lexer qualified as Lexer
+import Tiger.Ast
+  ( Dec (..),
+    Expr (..),
+    Id,
+    Lvalue (..),
+    Prog (..),
+    TypeField (..),
+  )
 
 type Parser = Parsec Void Text.Text
 
@@ -244,25 +244,17 @@ parseTypeFields = do
     Just typeFields -> return typeFields
     Nothing -> return []
 
--- ifexpr := `if` expr `then` expr `else` expr
---           `if` expr `then` expr
+-- ifexpr := `if` expr `then` expr [`else` expr]
 parseIfExpr :: Parser Expr
-parseIfExpr =
-  try
-    ( do
-        void $ parseKeyword "if"
-        cond <- parseExpr
-        void $ parseKeyword "then"
-        onTrue <- parseExpr
-        void $ parseKeyword "else"
-        IfThenElseExpr cond onTrue <$> parseExpr
-    )
-    <|> ( do
-            void $ parseKeyword "if"
-            cond <- parseExpr
-            void $ parseKeyword "then"
-            IfThenExpr cond <$> parseExpr
-        )
+parseIfExpr = do
+  void $ parseKeyword "if"
+  cond <- parseExpr
+  void $ parseKeyword "then"
+  onTrue <- parseExpr
+  maybeOnFalse <- optional $ do
+    void $ parseKeyword "else"
+    parseExpr
+  return $ IfThenElseExpr cond onTrue maybeOnFalse
 
 parseWhileExpr :: Parser Expr
 parseWhileExpr = do
