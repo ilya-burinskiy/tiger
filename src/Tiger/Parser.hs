@@ -177,50 +177,31 @@ parseTypeDeclaration =
               <$> (parseKeyword "array" *> parseKeyword "of" *> parseId)
           )
 
--- vardec := `var` id `:=` expr | `var` id`:`typeid `:=` expr
+-- vardec := `var` id [`:` typeid] `:=` expr
 parseVariableDeclaration :: Parser Dec
 parseVariableDeclaration =
-  try
-    ( do
-        void $ parseKeyword "var"
-        varId <- parseId
-        void $ lexeme $ string ":="
-        VarDec varId <$> parseExpr
-    )
-    <|> ( do
-            void $ parseKeyword "var"
-            varId <- parseId
-            void $ lexeme $ char ':'
-            typeId <- parseId
-            void $ lexeme $ string ":="
-            TypedVarDec varId typeId <$> parseExpr
-        )
+  do
+    void $ parseKeyword "var"
+    varId <- parseId
+    maybeVarType <- (optional . try) $ do
+      void $ symbol ":"
+      parseId
+    void $ symbol ":="
+    VarDec varId maybeVarType <$> parseExpr
 
--- fundec := `function` id `(` typefields `)` `=` exp |
---           `function` id `(` typefields `)` `:` typeid `=` exp
+-- fundec := `function` id `(` typefields `)` [`:` typeid] `=` exp
 parseFunctionDeclaration :: Parser Dec
-parseFunctionDeclaration =
-  try
-    ( do
-        void $ parseKeyword "function"
-        funId <- parseId
-        void $ lexeme $ char '('
-        typeFields <- parseTypeFields
-        void $ lexeme $ char ')'
-        void $ lexeme $ char '='
-        FunDec funId typeFields <$> parseExpr
-    )
-    <|> ( do
-            void $ parseKeyword "function"
-            funId <- parseId
-            void $ lexeme $ char '('
-            typeFields <- parseTypeFields
-            void $ lexeme $ char ')'
-            void $ lexeme $ char ':'
-            returnType <- parseId
-            void $ lexeme $ char '='
-            TypedFunDec funId typeFields returnType <$> parseExpr
-        )
+parseFunctionDeclaration = do
+  void $ parseKeyword "function"
+  funId <- parseId
+  void $ symbol "("
+  typeFields <- parseTypeFields
+  void $ symbol ")"
+  maybeReturnType <- optional $ do
+    void $ symbol ":"
+    parseId
+  void $ symbol "="
+  FunDec funId typeFields maybeReturnType <$> parseExpr
 
 parseTypeField :: Parser TypeField
 parseTypeField = do

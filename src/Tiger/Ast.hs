@@ -10,10 +10,8 @@ data Dec
   = AliasTypeDec TypeId TypeId
   | RecordTypeDec TypeId [TypeField]
   | ArrayTypeDec TypeId TypeId
-  | VarDec Id Expr
-  | TypedVarDec Id TypeId Expr
-  | FunDec Id [TypeField] Expr
-  | TypedFunDec Id [TypeField] TypeId Expr
+  | VarDec Id (Maybe TypeId) Expr
+  | FunDec Id [TypeField] (Maybe TypeId) Expr
   deriving (Show, Eq)
 
 data TypeField = TypeField Id TypeId deriving (Show, Eq)
