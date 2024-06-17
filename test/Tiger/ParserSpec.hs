@@ -16,3 +16,6 @@ spec = do
     describe "parseStringExpr" $ do
       it "parses string" $ do
         parse parseStringExpr "" "\"abcd\"" `shouldParse` StringExpr "abcd"
+    describe "parseIntExpr" $ do
+      it "parses int" $ do
+        parse parseIntExpr "" "123" `shouldParse` IntExpr 123
