@@ -4,8 +4,6 @@ type TypeId = String
 
 type Id = String
 
-data Prog = Prog [Dec] Expr deriving (Show)
-
 data Dec
   = AliasTypeDec TypeId TypeId
   | RecordTypeDec TypeId [TypeField]

@@ -15,7 +15,6 @@ import Tiger.Ast
     Expr (..),
     Id,
     Lvalue (..),
-    Prog (..),
     TypeField (..),
   )
 
@@ -35,13 +34,6 @@ parens = between (symbol "(") (symbol ")")
 
 parseKeyword :: Text.Text -> Parser Text.Text
 parseKeyword keyword = lexeme (string keyword <* notFollowedBy (alphaNumChar <|> char '_'))
-
-parseProg :: Parser Prog
-parseProg = do
-  maybeDecs <- optional parseDecList
-  case maybeDecs of
-    Just decs -> Prog decs <$> parseExpr <* eof
-    Nothing -> Prog [] <$> parseExpr <* eof
 
 parseExpr :: Parser Expr
 parseExpr =
